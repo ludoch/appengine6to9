@@ -17,13 +17,13 @@ import org.eclipse.jetty.http.HttpHeaderValue;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpScheme;
 import org.eclipse.jetty.http.HttpVersion;
-import org.eclipse.jetty.http.HttpGenerator.ResponseInfo;
+//import org.eclipse.jetty.http.HttpGenerator.ResponseInfo;
 import org.eclipse.jetty.io.Connection;
 import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.server.HttpChannel;
 import org.eclipse.jetty.server.HttpInput;
 import org.eclipse.jetty.server.HttpTransport;
-import org.eclipse.jetty.server.QueuedHttpInput;
+//import org.eclipse.jetty.server.QueuedHttpInput;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.util.BufferUtil;
 import org.eclipse.jetty.util.Callback;
@@ -35,6 +35,9 @@ import com.google.apphosting.base.HttpPb.HttpResponse;
 import com.google.apphosting.base.HttpPb.ParsedHttpHeader;
 import com.google.apphosting.base.RuntimePb.UPRequest;
 import com.google.apphosting.base.RuntimePb.UPResponse;
+import org.eclipse.jetty.http.MetaData;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConfiguration;
 
 /**
  * A custom version of HttpConnection that uses UPRequestParser and
@@ -120,32 +123,34 @@ public class RpcConnection implements Connection, HttpTransport {
   public void handle(AppVersionKey appVersionKey) 
       throws ServletException, IOException {
 
-    HttpInput<ByteBuffer> input=new QueuedHttpInput<ByteBuffer>()
-        {
-          @Override
-          protected void onContentConsumed(ByteBuffer item) {            
-          }
-
-          @Override
-          protected int remaining(ByteBuffer item) {
-            return item.remaining();
-          }
-
-          @Override
-          protected int get(ByteBuffer item, byte[] buffer, int offset,int length) {
-            int l = Math.min(item.remaining(), length);
-            item.get(buffer, offset, l);
-            return l;
-          }
-
-          @Override
-          protected void consume(ByteBuffer item, int length) {
-            item.position(item.position()+length);
-          }
-        };
+//    HttpInput<ByteBuffer> input=new QueuedHttpInput<ByteBuffer>()
+//        {
+//          @Override
+//          protected void onContentConsumed(ByteBuffer item) {            
+//          }
+//
+//          @Override
+//          protected int remaining(ByteBuffer item) {
+//            return item.remaining();
+//          }
+//
+//          @Override
+//          protected int get(ByteBuffer item, byte[] buffer, int offset,int length) {
+//            int l = Math.min(item.remaining(), length);
+//            item.get(buffer, offset, l);
+//            return l;
+//          }
+//
+//          @Override
+//          protected void consume(ByteBuffer item, int length) {
+//            item.position(item.position()+length);
+//          }
+//        };
         
-    HttpChannel<ByteBuffer> channel = new HttpChannel<ByteBuffer>(connector, connector.getHttpConfiguration(), endPoint, this, input);
-    Request request = channel.getRequest();
+    HttpChannel channel = 
+            new HttpChannel(connector, connector.getHttpConfiguration(), endPoint, this);
+    //  new HttpChannel(Connector connector, HttpConfiguration configuration, EndPoint endPoint, HttpTransport transport) {
+Request request = channel.getRequest();
     HttpRequest rpc = endPoint.getUpRequest().getRequest();
     
     // disable async
@@ -272,11 +277,11 @@ public class RpcConnection implements Connection, HttpTransport {
 
   
   @Override
-  public void send(ResponseInfo info, ByteBuffer content, boolean lastContent, Callback callback) {
+  public void send(MetaData.Response info, boolean head, ByteBuffer content, boolean lastContent, Callback callback) {
 
     HttpResponse httpRes = upResponse.getMutableHttpResponse();
     httpRes.setResponsecode(info.getStatus());
-    for (HttpField field : info.getHttpFields())
+    for (HttpField field : info.getFields())
     {
       ParsedHttpHeader promHeader = new ParsedHttpHeader();
       promHeader.setKey(field.getName());
@@ -287,7 +292,7 @@ public class RpcConnection implements Connection, HttpTransport {
     send(content,lastContent,callback);
   }
 
-  @Override
+ // @Override
   public void send(ByteBuffer content, boolean lastContent, Callback callback) {
     if (BufferUtil.hasContent(content))
     {
@@ -321,7 +326,7 @@ public class RpcConnection implements Connection, HttpTransport {
   }
 
   @Override
-  public void completed() {
+  public void onCompleted() {
     byte[] bytes;
     
     if (BufferUtil.hasContent(aggregate))
@@ -338,7 +343,26 @@ public class RpcConnection implements Connection, HttpTransport {
   }
 
   @Override
-  public void abort() {    
-    completed();
+  public void abort(Throwable thrwbl) {    
+    onCompleted();
+  }
+
+ 
+
+  @Override
+  public boolean isPushSupported() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public void push(MetaData.Request rqst) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+
+
+  @Override
+  public boolean isOptimizedForDirectBuffers() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 }

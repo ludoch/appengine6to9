@@ -2,33 +2,15 @@
 package com.google.apphosting.runtime.jetty;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 
-import org.eclipse.jetty.http.HttpField;
-import org.eclipse.jetty.http.HttpHeader;
-import org.eclipse.jetty.http.HttpHeaderValue;
-import org.eclipse.jetty.http.HttpMethod;
-import org.eclipse.jetty.http.HttpScheme;
-import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.AbstractConnector;
 import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.HttpChannel;
 import org.eclipse.jetty.server.HttpConfiguration;
-import org.eclipse.jetty.server.HttpInput;
-import org.eclipse.jetty.server.QueuedHttpInput;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.util.BufferUtil;
-import org.eclipse.jetty.util.URIUtil;
-import org.eclipse.jetty.webapp.WebAppContext;
 
 import com.google.apphosting.base.AppVersionKey;
-import com.google.apphosting.base.HttpPb.HttpRequest;
-import com.google.apphosting.base.HttpPb.ParsedHttpHeader;
 import com.google.apphosting.base.RuntimePb.UPRequest;
 import com.google.apphosting.base.RuntimePb.UPResponse;
 

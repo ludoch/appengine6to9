@@ -15,7 +15,7 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-annotations</artifactId>
-      <version>9.2.1.v20140609</version>
+      <version>9.3.6.v20151106</version>
       <type>jar</type>
     </dependency>
 
@@ -24,62 +24,62 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-quickstart</artifactId>
-      <version>9.2.1.v20140609</version>
+      <version>9.3.6.v20151106</version>
       <type>jar</type>
     </dependency>
 
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-webapp</artifactId>
-      <version>9.2.1.v20140609</version>
+      <version>9.3.6.v20151106</version>
       <type>jar</type>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>apache-jsp</artifactId>
-      <version>9.2.1.v20140609</version>
+      <version>9.3.6.v20151106</version>
       <type>jar</type>
     </dependency>
     <dependency>
       <groupId>com.google.appengine</groupId>
       <artifactId>appengine-api-1.0-sdk</artifactId>
-      <version>1.9.6</version>
+      <version>1.9.30</version>
       <type>jar</type>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>17.0-rc2</version>
+      <version>19.0</version>
       <type>jar</type>
     </dependency>
     <dependency>
       <groupId>com.google.appengine</groupId>
       <artifactId>appengine-api-stubs</artifactId>
-      <version>1.9.6</version>
+      <version>1.9.30</version>
       <type>jar</type>
     </dependency>
     <dependency>
       <groupId>com.google.appengine</groupId>
       <artifactId>appengine-testing</artifactId>
-      <version>1.9.6</version>
+      <version>1.9.30</version>
       <type>jar</type>
     </dependency>
     <dependency>
       <groupId>com.google.appengine</groupId>
       <artifactId>appengine-tools-sdk</artifactId>
-      <version>1.9.6</version>
+      <version>1.9.30</version>
       <type>jar</type>
     </dependency>
     <dependency>
       <groupId>com.google.appengine</groupId>
       <artifactId>appengine-remote-api</artifactId>
-      <version>1.9.6</version>
+      <version>1.9.30</version>
       <type>jar</type>
     </dependency>
     <dependency>
       <groupId>com.google.appengine</groupId>
       <artifactId>appengine-endpoints</artifactId>
-      <version>1.9.6</version>
+      <version>1.9.30</version>
       <type>jar</type>
     </dependency>
   </dependencies>

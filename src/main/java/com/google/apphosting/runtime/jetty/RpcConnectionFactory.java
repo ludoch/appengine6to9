@@ -1,5 +1,8 @@
 package com.google.apphosting.runtime.jetty;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import org.eclipse.jetty.io.Connection;
 import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.server.ConnectionFactory;
@@ -12,6 +15,10 @@ public class RpcConnectionFactory extends AbstractLifeCycle implements
   @Override
   public String getProtocol() {
     return "RPC";
+  }
+  @Override
+  public List<String> getProtocols() {
+    return Collections.unmodifiableList(Arrays.asList(new String[]{"RPC"}));
   }
 
   @Override

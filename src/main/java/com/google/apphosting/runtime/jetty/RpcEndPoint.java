@@ -131,4 +131,19 @@ public class RpcEndPoint implements EndPoint {
   public void onClose() {
   }
 
+  @Override
+  public boolean isFillInterested() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public boolean isOptimizedForDirectBuffers() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public void upgrade(Connection cnctn) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
 }
