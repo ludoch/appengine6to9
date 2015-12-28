@@ -1,0 +1,20 @@
+package com.google.apphosting.utils.config;
+
+/**
+ * Describes a problem with the configuration of App Engine.
+ *
+ */
+public class AppEngineConfigException extends RuntimeException {
+
+  public AppEngineConfigException(String message) {
+    super(message);
+  }
+
+  public AppEngineConfigException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public AppEngineConfigException(Throwable cause) {
+    super(cause);
+  }
+}

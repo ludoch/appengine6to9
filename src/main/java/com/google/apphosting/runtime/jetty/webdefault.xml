@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!--
+  This file was copied from
+    trunk/modules/jetty/src/main/resources/org/mortbay/jetty/webapp/webdefault.xml
+  in the Jetty SVN repository as of r2324.  It was then modified slightly.
+-->
+
+<!-- ===================================================================== -->
+<!-- This file contains the default descriptor for web applications.       -->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!-- The intent of this descriptor is to include jetty specific or common  -->
+<!-- configuration for all webapps.   If a context has a webdefault.xml    -->
+<!-- descriptor, it is applied before the contexts own web.xml file        -->
+<!--                                                                       -->
+<!-- A context may be assigned a default descriptor by:                    -->
+<!--  + Calling WebApplicationContext.setDefaultsDescriptor                -->
+<!--  + Passed an arg to addWebApplications                                -->
+<!--                                                                       -->
+<!-- This file is used both as the resource within the jetty.jar (which is -->
+<!-- used as the default if no explicit defaults descriptor is set) and it -->
+<!-- is copied to the etc directory of the Jetty distro and explicitly     -->
+<!-- by the jetty.xml file.                                                -->
+<!--                                                                       -->
+<!-- ===================================================================== -->
+<web-app
+   xmlns="http://java.sun.com/xml/ns/javaee"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+   metadata-complete="true"
+   version="2.5">
+
+  <description>
+    Default web.xml file.
+    This file is applied to a Web application before it's own WEB_INF/web.xml file
+  </description>
+
+
+  <!-- TODO(schwardo): I don't really know what this is.  Sounds hacky. -->
+  <context-param>
+    <param-name>org.eclipse.jetty.server.webapp.NoTLDJarPattern</param-name>
+    <param-value>start.jar|ant-.*\.jar|dojo-.*\.jar|jetty-.*\.jar|jsp-api-.*\.jar|junit-.*\.jar|servlet-api-.*\.jar|dnsns\.jar|rt\.jar|jsse\.jar|tools\.jar|sunpkcs11\.jar|sunjce_provider\.jar|xerces.*\.jar</param-value>
+  </context-param>
+
+  <!-- ==================================================================== -->
+  <!-- By default, the AbandonedTransactionDetector filter is mapped to all -->
+  <!-- servlets.  This filter rolls back any transactions that are still    -->
+  <!-- active when the request completes.                                   -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+  <filter>
+    <filter-name>AbandonedTransactionDetector</filter-name>
+    <filter-class>
+      com.google.apphosting.utils.servlet.TransactionCleanupFilter
+    </filter-class>
+  </filter>
+
+  <filter-mapping>
+    <filter-name>AbandonedTransactionDetector</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <!-- ===================================================================== -->
+  <!-- By default, the CloudSqlConnectionCleanupFilter filter is mapped to   -->
+  <!-- all servlets.  This filter closes any Cloud SQL connections that are  -->
+  <!-- not closed when the request completes.                                -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   -->
+  <filter>
+    <filter-name>CloudSqlConnectionCleanupFilter</filter-name>
+    <filter-class>
+      com.google.apphosting.utils.servlet.JdbcMySqlConnectionCleanupFilter
+    </filter-class>
+  </filter>
+
+  <filter-mapping>
+    <filter-name>CloudSqlConnectionCleanupFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <!-- ==================================================================== -->
+  <!-- By default, the SaveSessionFilter filter is mapped to all servlets.  -->
+  <!-- This filter saves any dirty sessions to memcache and the datastore.  -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+  <filter>
+    <filter-name>SaveSessionFilter</filter-name>
+    <filter-class>
+      com.google.apphosting.runtime.jetty.SaveSessionFilter
+    </filter-class>
+  </filter>
+
+  <filter-mapping>
+    <filter-name>SaveSessionFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <filter>
+    <filter-name>_ah_ParseBlobUploadFilter</filter-name>
+    <filter-class>
+      com.google.apphosting.utils.servlet.ParseBlobUploadFilter
+    </filter-class>
+  </filter>
+
+  <filter-mapping>
+    <filter-name>_ah_ParseBlobUploadFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <!--
+    All of the default servlets have been intentionally removed except for a
+    modified version of DefaultServlet, which is limited to serving static files
+    and welcome file redirects.
+  -->
+
+  <servlet>
+    <servlet-name>_ah_default</servlet-name>
+    <servlet-class>com.google.apphosting.runtime.jetty.ResourceFileServlet</servlet-class>
+  </servlet>
+
+  <servlet>
+    <servlet-name>_ah_sessioncleanup</servlet-name>
+    <servlet-class>com.google.apphosting.utils.servlet.SessionCleanupServlet</servlet-class>
+  </servlet>
+
+  <servlet>
+    <servlet-name>_ah_warmup</servlet-name>
+    <servlet-class>com.google.apphosting.utils.servlet.WarmupServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+
+  <servlet>
+    <servlet-name>_ah_queue_deferred</servlet-name>
+    <servlet-class>com.google.apphosting.utils.servlet.DeferredTaskServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>_ah_default</servlet-name>
+    <url-pattern>/</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>_ah_sessioncleanup</servlet-name>
+    <url-pattern>/_ah/sessioncleanup</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>_ah_warmup</servlet-name>
+    <url-pattern>/_ah/warmup</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>_ah_queue_deferred</servlet-name>
+    <url-pattern>/_ah/queue/__deferred__</url-pattern>
+  </servlet-mapping>
+
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>Disable TRACE</web-resource-name>
+      <url-pattern>/</url-pattern>
+      <http-method>TRACE</http-method>
+    </web-resource-collection>
+    <auth-constraint/>
+  </security-constraint>
+
+  <security-constraint>
+    <web-resource-collection>
+      <url-pattern>/_ah/queue/__deferred__</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+      <role-name>admin</role-name>
+    </auth-constraint>
+  </security-constraint>
+
+  <welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+
+  <session-config>
+    <session-timeout>1440</session-timeout>
+  </session-config>
+</web-app>
+
