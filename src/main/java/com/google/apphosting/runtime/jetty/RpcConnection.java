@@ -12,19 +12,23 @@ import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 
 import org.eclipse.jetty.http.HttpField;
+import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpHeaderValue;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpScheme;
+import org.eclipse.jetty.http.HttpURI;
 import org.eclipse.jetty.http.HttpVersion;
 //import org.eclipse.jetty.http.HttpGenerator.ResponseInfo;
 import org.eclipse.jetty.io.Connection;
 import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.server.HttpChannel;
+import org.eclipse.jetty.server.HttpChannelState;
 import org.eclipse.jetty.server.HttpInput;
 import org.eclipse.jetty.server.HttpTransport;
 //import org.eclipse.jetty.server.QueuedHttpInput;
 import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.util.ArrayUtil;
 import org.eclipse.jetty.util.BufferUtil;
 import org.eclipse.jetty.util.Callback;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -123,38 +127,29 @@ public class RpcConnection implements Connection, HttpTransport {
   public void handle(AppVersionKey appVersionKey) 
       throws ServletException, IOException {
 
-//    HttpInput<ByteBuffer> input=new QueuedHttpInput<ByteBuffer>()
-//        {
-//          @Override
-//          protected void onContentConsumed(ByteBuffer item) {            
-//          }
-//
-//          @Override
-//          protected int remaining(ByteBuffer item) {
-//            return item.remaining();
-//          }
-//
-//          @Override
-//          protected int get(ByteBuffer item, byte[] buffer, int offset,int length) {
-//            int l = Math.min(item.remaining(), length);
-//            item.get(buffer, offset, l);
-//            return l;
-//          }
-//
-//          @Override
-//          protected void consume(ByteBuffer item, int length) {
-//            item.position(item.position()+length);
-//          }
-//        };
-        
-    HttpChannel channel = 
-            new HttpChannel(connector, connector.getHttpConfiguration(), endPoint, this);
-    //  new HttpChannel(Connector connector, HttpConfiguration configuration, EndPoint endPoint, HttpTransport transport) {
-Request request = channel.getRequest();
-    HttpRequest rpc = endPoint.getUpRequest().getRequest();
-    
+    final HttpRequest rpc = endPoint.getUpRequest().getRequest();
+    final byte[] postdata = rpc.getPostdataAsBytes();
+
+
+    HttpChannel channel = new HttpChannel(connector, connector.getHttpConfiguration(), endPoint, this)   {
+      @Override
+      protected HttpInput newHttpInput(HttpChannelState state) {
+        return new HttpInput(state)
+        {
+          {
+            // give the input any post content
+            if (postdata!=null)
+              addContent(new Content(BufferUtil.toBuffer(postdata)));
+          }
+        };
+      }
+    };
+
+
+    Request request = channel.getRequest();
     // disable async
     request.setAsyncSupported(false);
+    
 
     // is this SSL
     if (rpc.isIsHttps())
@@ -163,11 +158,15 @@ Request request = channel.getRequest();
       request.setSecure(true);
     }
     
+    
     // pretend to parse the request line
     HttpMethod method = HttpMethod.CACHE.getBest(rpc.getProtocol(), 0, rpc.getProtocol().length);
     String methodS = method!=null?method.asString():new String(rpc.getProtocol(), 0, rpc.getProtocol().length,StandardCharsets.ISO_8859_1);
+    HttpURI uri = new HttpURI(BufferUtil.toString(BufferUtil.toBuffer(rpc.getUrl())));
     HttpVersion version = HttpVersion.CACHE.getBest(rpc.getHttpVersion(), 0, rpc.getHttpVersion().length);
-    channel.startRequest(method,methodS,BufferUtil.toBuffer(rpc.getUrl()),version);
+   
+    MetaData.Request requestData = new MetaData.Request(methodS,uri,version,new HttpFields(),postdata==null?-1:postdata.length);
+    
 
     // pretend to parse the header fields
     for (ParsedHttpHeader header : rpc.headerss())
@@ -187,20 +186,14 @@ Request request = channel.getRequest();
         else
           field=new HttpField(h,hv);
       }
-      channel.parsedHeader(field);
+      requestData.getFields().add(field);
     }
     
     // end of headers. This should return true to indicate that we are good to continue handling
-    if (!channel.headerComplete())
-      throw new ServletException("cannot handle?");
+    channel.onRequest(requestData);
 
-    // give the input any post content
-    byte[] postdata = rpc.getPostdataAsBytes();
-    if (postdata!=null)
-      input.content(BufferUtil.toBuffer(postdata));
-    
     // signal the end of the request
-    channel.messageComplete();
+    channel.onRequestComplete();
 
     // Tell AppVersionHandlerMap which app version should handle this
     // request.
